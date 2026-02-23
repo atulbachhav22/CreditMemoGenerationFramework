@@ -1,0 +1,126 @@
+ACME Manufacturing Corporation
+Consolidated Financial Statement
+Fiscal Year Ending December 31, 2023
+
+================================================================================
+
+INCOME STATEMENT
+For the Year Ended December 31, 2023
+(All amounts in USD)
+
+Revenue
+  Product Sales                                    $12,500,000
+  Service Revenue                                   $2,300,000
+  Other Revenue                                       $200,000
+                                                   ------------
+  Total Revenue                                    $15,000,000
+
+Cost of Goods Sold
+  Raw Materials                                     $4,200,000
+  Direct Labor                                      $2,100,000
+  Manufacturing Overhead                            $1,700,000
+                                                   ------------
+  Total COGS                                        $8,000,000
+
+Gross Profit                                        $7,000,000
+
+Operating Expenses
+  Sales and Marketing                               $1,800,000
+  General and Administrative                        $1,500,000
+  Research and Development                            $700,000
+  Depreciation and Amortization                       $500,000
+                                                   ------------
+  Total Operating Expenses                          $4,500,000
+
+Operating Income                                    $2,500,000
+
+Other Income/(Expenses)
+  Interest Income                                      $50,000
+  Interest Expense                                   ($300,000)
+                                                   ------------
+  Net Other Expenses                                 ($250,000)
+
+Income Before Taxes                                 $2,250,000
+
+Income Tax Expense                                   ($450,000)
+
+Net Income                                          $1,800,000
+
+================================================================================
+
+BALANCE SHEET
+As of December 31, 2023
+(All amounts in USD)
+
+ASSETS
+
+Current Assets
+  Cash and Cash Equivalents                         $2,800,000
+  Accounts Receivable                               $3,200,000
+  Inventory                                         $2,500,000
+  Prepaid Expenses                                    $300,000
+  Other Current Assets                                $200,000
+                                                   ------------
+  Total Current Assets                              $9,000,000
+
+Non-Current Assets
+  Property, Plant & Equipment (net)                 $8,500,000
+  Intangible Assets                                 $1,200,000
+  Long-term Investments                               $800,000
+  Other Non-Current Assets                            $500,000
+                                                   ------------
+  Total Non-Current Assets                         $11,000,000
+
+TOTAL ASSETS                                       $20,000,000
+
+================================================================================
+
+LIABILITIES AND SHAREHOLDERS' EQUITY
+
+Current Liabilities
+  Accounts Payable                                  $2,100,000
+  Accrued Expenses                                    $900,000
+  Short-term Debt                                     $800,000
+  Current Portion of Long-term Debt                   $500,000
+  Other Current Liabilities                           $200,000
+                                                   ------------
+  Total Current Liabilities                         $4,500,000
+
+Non-Current Liabilities
+  Long-term Debt                                    $4,000,000
+  Deferred Tax Liabilities                            $600,000
+  Other Non-Current Liabilities                       $400,000
+                                                   ------------
+  Total Non-Current Liabilities                     $5,000,000
+
+TOTAL LIABILITIES                                   $9,500,000
+
+Shareholders' Equity
+  Common Stock                                      $3,000,000
+  Retained Earnings                                 $7,000,000
+  Other Comprehensive Income                          $500,000
+                                                   ------------
+  Total Shareholders' Equity                       $10,500,000
+
+TOTAL LIABILITIES AND SHAREHOLDERS' EQUITY         $20,000,000
+
+================================================================================
+
+ADDITIONAL INFORMATION
+
+Company: ACME Manufacturing Corporation
+Industry: Industrial Manufacturing
+Reporting Period: January 1, 2023 - December 31, 2023
+Fiscal Year End: December 31, 2023
+Number of Employees: 285
+
+The company manufactures industrial components and machinery for the
+construction and agricultural sectors. Primary products include hydraulic
+systems, metal fabrication, and custom manufacturing solutions.
+
+Principal markets: United States (65%), Canada (20%), Mexico (15%)
+
+Management has assessed the going concern assumption and believes the company
+has adequate resources to continue operations for the foreseeable future.
+
+================================================================================
