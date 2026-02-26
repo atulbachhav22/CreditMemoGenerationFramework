@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 # Add parent directory to path to import skill_engine
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from skill_engine import SkillProcessor
+from skill_engine import SkillProcessor, get_available_llm_config, get_llm_display_name
 
 # Load environment variables from .env file
 load_dotenv()
@@ -28,30 +28,22 @@ def main():
     # Get API key from environment
     api_key = os.getenv("OPENAI_API_KEY")  # or ANTHROPIC_API_KEY
 
-    if not api_key:
-        print("Error: Please set OPENAI_API_KEY or ANTHROPIC_API_KEY in your environment")
-        print("You can create a .env file with:")
-        print("OPENAI_API_KEY=your_key_here")
-        return
-
-    # Initialize the SkillProcessor
-    # Option 1: Using OpenAI
-    #processor = SkillProcessor(
-    #    llm_provider="openai",
-    #    model_name="gpt-4",  # or "gpt-4-turbo-preview", "gpt-3.5-turbo"
-    #    temperature=0.0,
-    #    api_key=api_key,
-    #    verbose=True
-    #)
-
-    # Option 2: Using Anthropic Claude (uncomment to use)
+    # Detect available LLM
+    provider, model, api_key = get_available_llm_config()
+    display_name = get_llm_display_name(provider, model)
+    
+    print("\n" + "=" * 80)
+    print(f"Using: {display_name}")
+    print("=" * 80)
+    
+    # Initialize processor with detected LLM
     processor = SkillProcessor(
-         llm_provider="anthropic",
-         model_name="claude-sonnet-4-5-20250929",  # Stable and widely available
-         temperature=0.0,
-         api_key=os.getenv("ANTHROPIC_API_KEY"),
-         verbose=True
-     )
+        llm_provider=provider,
+        model_name=model,
+        api_key=api_key,
+        temperature=0.0,
+        verbose=True
+    )
 
     print("=" * 80)
     print("Credit Memo Generator - SkillEngine Demo")
