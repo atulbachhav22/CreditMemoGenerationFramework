@@ -2,6 +2,7 @@
 Pydantic schemas for the FastAPI skill execution API.
 """
 
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
@@ -83,3 +84,57 @@ class DocumentResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str = "ok"
     version: str
+
+
+# --- Workflow schemas ---
+
+class WorkflowNodePosition(BaseModel):
+    x: float
+    y: float
+
+
+class WorkflowNode(BaseModel):
+    id: str
+    skill_name: str
+    label: str
+    position: WorkflowNodePosition
+
+
+class WorkflowEdge(BaseModel):
+    id: str
+    source: str
+    target: str
+    edge_type: str = "sequential"
+
+
+class Workflow(BaseModel):
+    id: Optional[str] = None
+    name: str
+    description: str = ""
+    nodes: List[WorkflowNode]
+    edges: List[WorkflowEdge]
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+
+# --- Workflow execution schemas ---
+
+class WorkflowNodeResult(BaseModel):
+    node_id: str
+    skill_name: str
+    label: str
+    final_output: str = ""
+    step_outputs: Dict[str, str] = {}
+    variables: Dict[str, Any] = {}
+    verification_results: Dict[str, bool] = {}
+    execution_metadata: Dict[str, Any] = {}
+    error: Optional[str] = None
+
+
+class WorkflowExecutionResult(BaseModel):
+    workflow_id: str
+    workflow_name: str
+    execution_order: List[str]
+    node_results: Dict[str, WorkflowNodeResult]
+    completed: bool
+    error: Optional[str] = None
