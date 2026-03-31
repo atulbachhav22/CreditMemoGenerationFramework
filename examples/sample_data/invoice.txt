@@ -1,0 +1,148 @@
+================================================================================
+                         COMMERCIAL INVOICE
+================================================================================
+
+SELLER (FROM)                          BUYER (TO)
+--------------------------------------------------------------------------------
+Apex Components Ltd                    Global Motors Corp
+Unit 4, Bridgewater Industrial Park    1200 Assembly Drive
+Manchester, M17 1EH                    Detroit, MI 48201
+United Kingdom                         United States of America
+VAT No: GB 847 2391 04                 Tax ID: 38-1924756
+Email: accounts@apexcomponents.co.uk   Email: ap.invoices@globalmotors.com
+Phone: +44 161 834 5500                Phone: +1 313 556 8800
+
+================================================================================
+INVOICE DETAILS
+================================================================================
+
+Invoice Number   :  INV-2026-00842
+Invoice Date     :  01 March 2026
+Purchase Order   :  PO-88821
+Payment Terms    :  Net 60
+Due Date         :  30 April 2026
+Currency         :  USD
+
+================================================================================
+LINE ITEMS
+================================================================================
+
+ #   Description                              Qty    Unit Price      Amount
+--------------------------------------------------------------------------------
+ 1   Hydraulic Actuator Assembly               120     $  650.00   $ 78,000.00
+     Part No: HYD-ACT-7712
+     Spec: 200-bar rated, ISO 4401 compliant
+
+ 2   Precision Valve Block — Type B             80     $  425.00   $ 34,000.00
+     Part No: VLV-BLK-B44
+     Spec: Aluminium alloy, CNC machined
+
+ 3   High-Pressure Seal Kit (Box of 50)        100     $  185.00   $ 18,500.00
+     Part No: SLK-HP-50X
+     Spec: Nitrile rubber, rated to 300°C
+
+ 4   Hydraulic Manifold — 8-Port               150     $  360.00   $ 54,000.00
+     Part No: MAN-8PT-SS
+     Spec: Stainless steel body, SAE flange
+
+ 5   Installation Hardware Pack                 500     $    1.00   $    500.00
+     Part No: HWP-STD-01
+     Spec: M12 bolts, washers, locking nuts
+
+--------------------------------------------------------------------------------
+                                         Sub-Total :         $185,000.00
+                                      Freight (DDP):          Included
+                                             Tax   :          Zero-rated
+                                                              ___________
+                                         TOTAL DUE :         $185,000.00
+================================================================================
+
+DELIVERY INFORMATION
+--------------------------------------------------------------------------------
+Delivery Method  :  FOB Manchester — DDP Detroit
+Shipment Date    :  15 March 2026
+Estimated Arrival:  28 March 2026
+Tracking No      :  DHL-EXPRESS-4471829300
+Related PO Date  :  18 February 2026
+
+================================================================================
+SELLER BACKGROUND
+================================================================================
+
+Apex Components Ltd is an established UK manufacturer of precision hydraulic
+components and assemblies, supplying Tier-1 automotive and industrial OEMs
+since 2008. The company operates two manufacturing facilities in the UK and
+employs approximately 320 staff.
+
+Annual Revenue (FY2025)   :  ~$14.2M USD equivalent
+Years in Operation        :  18 years
+Primary Markets           :  Automotive OEM (55%), Industrial Machinery (30%),
+                             Aerospace (15%)
+Bank                      :  Barclays Commercial, Manchester
+Credit Rating             :  Not publicly rated (private company)
+
+Notable Customers         :  Global Motors Corp, Rolls-Royce plc,
+                             Caterpillar Europe, JCB Ltd
+
+================================================================================
+BUYER BACKGROUND
+================================================================================
+
+Global Motors Corp is a publicly listed multinational automotive manufacturer
+headquartered in Detroit, Michigan. The company designs and manufactures
+passenger vehicles, commercial trucks, and industrial powertrains.
+
+Annual Revenue (FY2025)   :  ~$185B USD
+Years in Operation        :  94 years
+S&P Credit Rating         :  BBB+ (Investment Grade)
+Payment Terms Policy      :  Standard Net 60 for all Tier-2 suppliers
+DUNS Number               :  06-812-3344
+
+================================================================================
+PAYMENT INSTRUCTIONS
+================================================================================
+
+Bank Name        :  Barclays Bank PLC
+Account Name     :  Apex Components Ltd
+Sort Code        :  20-18-53
+Account Number   :  43821904
+IBAN             :  GB29 BUKB 2018 5343 8219 04
+SWIFT/BIC        :  BUKBGB22
+Reference        :  INV-2026-00842
+
+Please ensure the invoice reference number is quoted on all payments.
+Payment by bank transfer only. Cheques not accepted.
+
+================================================================================
+TERMS AND CONDITIONS
+================================================================================
+
+1. Title and risk pass to buyer upon delivery to the stated delivery address.
+2. All goods are warranted against defects in materials and workmanship for
+   12 months from date of delivery.
+3. Late payments will incur interest at 8% per annum above the Bank of England
+   base rate under the Late Payment of Commercial Debts Act 1998.
+4. This invoice is subject to English law and the exclusive jurisdiction of
+   the courts of England and Wales.
+5. Goods remain the property of Apex Components Ltd until payment is received
+   in full.
+
+================================================================================
+FINANCING ELIGIBILITY NOTES
+================================================================================
+
+Submitted for invoice financing consideration:
+
+  Invoice Amount   :  $185,000.00 USD
+  Invoice Date     :  01 March 2026
+  Due Date         :  30 April 2026
+  Days to Maturity :  30 days from submission date (31 March 2026)
+  Assignment       :  Invoice has NOT been previously assigned or discounted
+  Disputes         :  No known disputes on this invoice
+  Confirmation     :  Buyer has acknowledged receipt of goods (28 March 2026)
+
+================================================================================
+                    Authorised Signatory: Sarah Mitchell
+                    Title: Finance Director, Apex Components Ltd
+                    Date: 31 March 2026
+================================================================================

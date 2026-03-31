@@ -18,6 +18,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from skill_engine import SkillProcessor, SkillMarkdownParser, __version__
+from skill_engine.pipeline import PipelineOrchestrator
 from api.schemas import (
     DocumentResponse,
     ExecuteSkillRequest,
@@ -318,52 +319,32 @@ def save_workflow(workflow: Workflow):
     return workflow
 
 
-def _topological_sort(workflow: Workflow) -> list[str]:
-    """Return node IDs in topological execution order (Kahn's algorithm)."""
-    from collections import defaultdict, deque
-
-    in_degree = {n.id: 0 for n in workflow.nodes}
-    adj: dict[str, list[str]] = defaultdict(list)
-
-    for edge in workflow.edges:
-        adj[edge.source].append(edge.target)
-        in_degree[edge.target] = in_degree.get(edge.target, 0) + 1
-
-    queue = deque(n_id for n_id, deg in in_degree.items() if deg == 0)
-    order: list[str] = []
-
-    while queue:
-        n_id = queue.popleft()
-        order.append(n_id)
-        for neighbor in adj[n_id]:
-            in_degree[neighbor] -= 1
-            if in_degree[neighbor] == 0:
-                queue.append(neighbor)
-
-    if len(order) != len(workflow.nodes):
-        raise ValueError("Workflow contains a cycle — cannot execute.")
-
-    return order
-
-
 @app.post("/workflows/{workflow_id}/execute", response_model=WorkflowExecutionResult)
 def execute_workflow(workflow_id: str, request: ExecuteSkillRequest = ExecuteSkillRequest()):
     """
-    Execute a workflow by running each skill node in topological order.
+    Execute a workflow using the PipelineOrchestrator.
 
-    Variables produced by each skill are accumulated and passed into the
-    next skill as initial_variables, so outputs can flow between steps.
+    Skills whose predecessors are all done are submitted to a thread pool
+    simultaneously, so independent nodes run in parallel. Variables and step
+    outputs produced by each skill flow automatically into downstream skills
+    via the shared pipeline luggage.
+
+    Input context is provided via the request body:
+    - `initial_variables` — key/value pairs seeded into every skill
+    - `reference_files`   — uploaded file paths injected as global reference
+                            files into every skill (use POST /documents first)
     """
     path = WORKFLOWS_DIR / f"{workflow_id}.json"
     if not path.exists():
         raise HTTPException(status_code=404, detail=f"Workflow '{workflow_id}' not found.")
 
+    # Load workflow just for node label lookup in the response
     try:
         workflow = Workflow(**json.loads(path.read_text(encoding="utf-8")))
     except Exception as e:
         raise HTTPException(status_code=422, detail=f"Failed to parse workflow: {e}")
 
-    # Resolve LLM config (same logic as execute_skill)
+    # Resolve LLM config with fallbacks to environment variables
     llm_provider = request.llm_provider or os.getenv("DEFAULT_LLM_PROVIDER", "anthropic")
     model_name = request.model_name or os.getenv("DEFAULT_MODEL_NAME", "claude-3-5-sonnet-20241022")
 
@@ -381,77 +362,63 @@ def execute_workflow(workflow_id: str, request: ExecuteSkillRequest = ExecuteSki
         )
 
     try:
-        execution_order = _topological_sort(workflow)
-    except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
+        orchestrator = PipelineOrchestrator(
+            skills_dir=str(SKILLS_DIR),
+            llm_provider=llm_provider,
+            model_name=model_name,
+            temperature=request.temperature,
+            api_key=api_key,
+            base_path=str(PROJECT_ROOT),
+            reference_files=request.reference_files or [],
+            verbose=False,
+        )
 
+        result = orchestrator.execute_workflow_file(
+            workflow_path=str(path),
+            initial_variables=dict(request.initial_variables or {}),
+        )
+
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Workflow execution failed: {e}")
+
+    # Map PipelineResult → WorkflowExecutionResult
     node_by_id = {n.id: n for n in workflow.nodes}
-    skill_files = _get_skill_files()
-
-    processor = SkillProcessor(
-        llm_provider=llm_provider,
-        model_name=model_name,
-        temperature=request.temperature,
-        api_key=api_key,
-        base_path=str(PROJECT_ROOT),
-        verbose=False,
-    )
-
-    # Variables accumulate across nodes so each skill sees prior outputs
-    shared_variables: dict = dict(request.initial_variables or {})
     node_results: dict[str, WorkflowNodeResult] = {}
 
-    for node_id in execution_order:
-        node = node_by_id[node_id]
+    for node_id, luggage in result.node_luggages.items():
+        node = node_by_id.get(node_id)
+        final_output = list(luggage.step_outputs.values())[-1] if luggage.step_outputs else ""
+        node_results[node_id] = WorkflowNodeResult(
+            node_id=node_id,
+            skill_name=node.skill_name if node else node_id,
+            label=node.label if node else node_id,
+            final_output=final_output,
+            step_outputs=luggage.step_outputs,
+            variables=luggage.variables,
+            verification_results=luggage.verification_results,
+            execution_metadata=luggage.execution_metadata,
+        )
 
-        if node.skill_name not in skill_files:
-            node_results[node_id] = WorkflowNodeResult(
-                node_id=node_id,
-                skill_name=node.skill_name,
-                label=node.label,
-                error=f"Skill '{node.skill_name}' not found.",
-            )
-            continue
+    for node_id, error in result.node_errors.items():
+        node = node_by_id.get(node_id)
+        node_results[node_id] = WorkflowNodeResult(
+            node_id=node_id,
+            skill_name=node.skill_name if node else node_id,
+            label=node.label if node else node_id,
+            error=str(error),
+        )
 
-        try:
-            skill = parser.parse_file(str(skill_files[node.skill_name]))
-
-            if request.reference_files:
-                skill.global_reference_files.extend(request.reference_files)
-
-            luggage = processor.execute_skill(skill, initial_variables=dict(shared_variables))
-            final_output = processor.get_final_output(luggage)
-
-            # Accumulate variables for the next skill
-            shared_variables.update(luggage.variables)
-            # Also expose this skill's final output as a named variable
-            shared_variables[f"{node.skill_name}_output"] = final_output
-
-            node_results[node_id] = WorkflowNodeResult(
-                node_id=node_id,
-                skill_name=node.skill_name,
-                label=node.label,
-                final_output=final_output,
-                step_outputs=luggage.step_outputs,
-                variables=luggage.variables,
-                verification_results=luggage.verification_results,
-                execution_metadata=luggage.execution_metadata,
-            )
-
-        except Exception as e:
-            node_results[node_id] = WorkflowNodeResult(
-                node_id=node_id,
-                skill_name=node.skill_name,
-                label=node.label,
-                error=str(e),
-            )
-
-    completed = all(r.error is None for r in node_results.values())
+    # Flat execution_order for backward compatibility; waves for parallel detail
+    flat_order = [node_id for wave in result.execution_order for node_id in wave]
 
     return WorkflowExecutionResult(
         workflow_id=workflow_id,
         workflow_name=workflow.name,
-        execution_order=execution_order,
+        execution_order=flat_order,
+        execution_waves=result.execution_order,
         node_results=node_results,
-        completed=completed,
+        completed=result.success,
+        duration_seconds=result.duration_seconds,
     )

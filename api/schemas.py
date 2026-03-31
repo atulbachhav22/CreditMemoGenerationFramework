@@ -134,7 +134,9 @@ class WorkflowNodeResult(BaseModel):
 class WorkflowExecutionResult(BaseModel):
     workflow_id: str
     workflow_name: str
-    execution_order: List[str]
+    execution_order: List[str]             # flat list of node IDs in run order
+    execution_waves: List[List[str]] = []  # grouped by wave — parallel nodes share a wave
     node_results: Dict[str, WorkflowNodeResult]
     completed: bool
+    duration_seconds: float = 0.0
     error: Optional[str] = None

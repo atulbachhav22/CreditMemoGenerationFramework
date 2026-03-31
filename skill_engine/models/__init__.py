@@ -9,6 +9,7 @@ from skill_engine.models.skill import (
     HttpMethod,
 )
 from skill_engine.models.luggage import SkillLuggage
+from skill_engine.models.workflow import WorkflowDefinition, WorkflowNode, WorkflowEdge
 
 __all__ = [
     "Skill",
@@ -18,4 +19,7 @@ __all__ = [
     "ApiContextDefinition",
     "HttpMethod",
     "SkillLuggage",
+    "WorkflowDefinition",
+    "WorkflowNode",
+    "WorkflowEdge",
 ]
