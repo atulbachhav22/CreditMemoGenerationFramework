@@ -3,14 +3,14 @@
 > A robust Python framework for executing LLM-orchestrated Skills defined in Markdown files
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 
 ## Overview
 
 **SkillEngine** is a powerful, extensible framework that allows you to define complex, multi-step LLM workflows as simple Markdown documents. The framework handles:
 
 - 📝 Parsing structured instructions from Markdown files
-- 🔄 Sequential step execution with state management
+- 🔄 Sequential and Parallel step execution with state management
 - 📁 Dynamic file loading and context injection
 - ✅ Automated verification loops
 - 🎯 Skill-agnostic architecture (works with any task)
