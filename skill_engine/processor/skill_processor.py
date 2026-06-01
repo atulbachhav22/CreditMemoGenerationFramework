@@ -22,6 +22,7 @@ from skill_engine.parser.markdown_parser import SkillMarkdownParser
 from skill_engine.llm.orchestrator import LLMOrchestrator
 from skill_engine.utils.file_loader import FileLoader
 from skill_engine.utils.api_caller import ApiCaller, ApiCallError
+from skill_engine.utils.mcp_caller import McpCaller, McpCallError
 
 
 class SkillProcessor:
@@ -73,6 +74,7 @@ class SkillProcessor:
         )
         self.file_loader = FileLoader()
         self.api_caller = ApiCaller()
+        self.mcp_caller = McpCaller()
 
         self.base_path = Path(base_path) if base_path else Path.cwd()
         self.verbose = verbose
@@ -134,6 +136,10 @@ class SkillProcessor:
         if skill.global_api_context:
             self._fetch_api_context(skill.global_api_context, luggage, scope="global")
 
+        # Fetch global MCP context
+        if skill.global_mcp_context:
+            self._fetch_mcp_context(skill.global_mcp_context, luggage, scope="global")
+
         # Display skill info
         if self.verbose:
             self.console.print(f"\n[bold green]Executing Skill:[/bold green] {skill.metadata.name}")
@@ -183,6 +189,10 @@ class SkillProcessor:
         # Fetch step-level API context
         if step.api_context:
             self._fetch_api_context(step.api_context, luggage, scope=f"step_{step.step_number}")
+
+        # Fetch step-level MCP context
+        if step.mcp_context:
+            self._fetch_mcp_context(step.mcp_context, luggage, scope=f"step_{step.step_number}")
 
         # Build context for LLM
         luggage_context = luggage.get_context_summary()
@@ -336,6 +346,45 @@ class SkillProcessor:
                 if self.verbose:
                     self.console.print(
                         f"[yellow]  Warning: API call '{api_def.alias}' failed: {e}[/yellow]"
+                    )
+
+    def _fetch_mcp_context(
+        self,
+        mcp_definitions: list,
+        luggage: SkillLuggage,
+        scope: str = "global"
+    ) -> None:
+        """
+        Call MCP tools and store results in luggage alongside API responses.
+
+        Args:
+            mcp_definitions: List of McpContextDefinition objects
+            luggage: SkillLuggage to store results
+            scope: Scope identifier for logging (e.g., "global", "step_1")
+        """
+        for mcp_def in mcp_definitions:
+            existing = luggage.get_api_response(mcp_def.alias)
+            if existing is not None:
+                logger.info(f"MCP context '{mcp_def.alias}' already loaded, skipping")
+                continue
+
+            try:
+                data = self.mcp_caller.call_tool(mcp_def)
+                luggage.store_api_response(mcp_def.alias, data)
+
+                if self.verbose:
+                    preview = str(data)[:100] + ("..." if len(str(data)) > 100 else "")
+                    self.console.print(f"[dim]  MCP [{mcp_def.alias}]: {preview}[/dim]")
+
+            except McpCallError as e:
+                logger.error(f"MCP context fetch failed ({scope}): {e}")
+                luggage.store_api_response(
+                    mcp_def.alias,
+                    {"_error": str(e), "_alias": mcp_def.alias}
+                )
+                if self.verbose:
+                    self.console.print(
+                        f"[yellow]  Warning: MCP call '{mcp_def.alias}' failed: {e}[/yellow]"
                     )
 
     def _resolve_file_path(self, file_path: str) -> Path:

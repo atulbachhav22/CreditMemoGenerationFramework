@@ -19,6 +19,8 @@ from skill_engine.models.skill import (
     StepType,
     ApiContextDefinition,
     HttpMethod,
+    McpContextDefinition,
+    McpTransport,
 )
 
 
@@ -124,6 +126,11 @@ class SkillMarkdownParser:
             sections.get("API Context", "")
         )
 
+        # Parse global MCP context
+        global_mcp_context = self._parse_mcp_context_section(
+            sections.get("MCP Context", "")
+        )
+
         # Parse steps
         steps = self._parse_steps(sections.get("Steps", ""))
 
@@ -139,6 +146,7 @@ class SkillMarkdownParser:
             steps=steps,
             global_reference_files=global_ref_files,
             global_api_context=global_api_context,
+            global_mcp_context=global_mcp_context,
             final_output_format=final_output,
             success_criteria=success_criteria
         )
@@ -315,6 +323,9 @@ class SkillMarkdownParser:
         # Extract step-level API context
         api_context = self._parse_step_api_context(content)
 
+        # Extract step-level MCP context
+        mcp_context = self._parse_step_mcp_context(content)
+
         return SkillStep(
             step_number=step_num,
             name=step_name,
@@ -324,7 +335,8 @@ class SkillMarkdownParser:
             reference_files=reference_files,
             expected_output_format=expected_output,
             verification=verification,
-            api_context=api_context
+            api_context=api_context,
+            mcp_context=mcp_context,
         )
 
     def _extract_subsection(self, content: str, subsection_name: str) -> Optional[str]:
@@ -494,3 +506,119 @@ class SkillMarkdownParser:
             body=body,
             extract=extract,
         )]
+
+    # ------------------------------------------------------------------
+    # MCP Context parsing
+    # ------------------------------------------------------------------
+
+    def _parse_mcp_context_section(self, content: str) -> List[McpContextDefinition]:
+        """
+        Parse global ## MCP Context section with ### MCP: <alias> sub-headers.
+
+        Expected format:
+            ## MCP Context
+            ### MCP: my_alias
+            - Server: http://localhost:3000/sse
+            - Tool: get_data
+            - Arguments: {"key": "value"}
+            - Transport: sse
+            - Description: Fetch data from MCP server
+
+        Args:
+            content: MCP Context section content
+
+        Returns:
+            List of McpContextDefinition objects
+        """
+        if not content or not content.strip():
+            return []
+
+        mcps = []
+
+        # Split by ### MCP: headers
+        mcp_pattern = r'^### MCP:\s*(.+?)$'
+        parts = re.split(mcp_pattern, content, flags=re.MULTILINE)
+
+        for i in range(1, len(parts), 2):
+            if i + 1 < len(parts):
+                alias = parts[i].strip()
+                mcp_content = parts[i + 1].strip()
+                mcp_def = self._parse_single_mcp_definition(alias, mcp_content)
+                if mcp_def:
+                    mcps.append(mcp_def)
+
+        return mcps
+
+    def _parse_single_mcp_definition(self, alias: str, content: str) -> Optional[McpContextDefinition]:
+        """
+        Parse a single MCP definition from bullet-list content.
+
+        Args:
+            alias: The alias/key name for this MCP call
+            content: The bullet-list content defining the MCP call
+
+        Returns:
+            McpContextDefinition or None if required fields are missing
+        """
+        import json as _json
+
+        server = self._extract_field(content, "Server")
+        if not server:
+            logger.warning(f"MCP context '{alias}' missing Server, skipping")
+            return None
+
+        tool = self._extract_field(content, "Tool")
+        if not tool:
+            logger.warning(f"MCP context '{alias}' missing Tool, skipping")
+            return None
+
+        arguments_str = self._extract_field(content, "Arguments")
+        arguments = None
+        if arguments_str:
+            try:
+                arguments = _json.loads(arguments_str)
+            except _json.JSONDecodeError:
+                logger.warning(f"MCP context '{alias}' has invalid JSON in Arguments, ignoring")
+
+        transport_str = self._extract_field(content, "Transport", "auto")
+        try:
+            transport = McpTransport(transport_str.lower())
+        except ValueError:
+            logger.warning(f"Invalid transport '{transport_str}' for MCP '{alias}', defaulting to auto")
+            transport = McpTransport.AUTO
+
+        description = self._extract_field(content, "Description")
+
+        return McpContextDefinition(
+            alias=alias,
+            server=server,
+            tool=tool,
+            arguments=arguments,
+            transport=transport,
+            description=description,
+        )
+
+    def _parse_step_mcp_context(self, content: str) -> List[McpContextDefinition]:
+        """
+        Parse step-level **MCP Context:** subsection.
+
+        Expected format inside a step:
+            **MCP Context:**
+            - Alias: my_alias
+            - Server: http://localhost:3000/sse
+            - Tool: get_data
+            - Arguments: {"key": "value"}
+
+        Args:
+            content: Step content
+
+        Returns:
+            List of McpContextDefinition objects (typically 0 or 1)
+        """
+        mcp_content = self._extract_subsection(content, "MCP Context")
+        if not mcp_content:
+            return []
+
+        alias = self._extract_field(mcp_content, "Alias", "mcp_response")
+        mcp_def = self._parse_single_mcp_definition(alias, mcp_content)
+        return [mcp_def] if mcp_def else []

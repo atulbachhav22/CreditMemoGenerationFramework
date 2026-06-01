@@ -24,6 +24,51 @@ class HttpMethod(str, Enum):
     DELETE = "DELETE"
 
 
+class McpTransport(str, Enum):
+    """Transport type for MCP server connections."""
+    STDIO = "stdio"   # subprocess-based server (e.g., npx ...)
+    SSE = "sse"       # HTTP/SSE-based server (http:// or https://)
+    AUTO = "auto"     # detect from server field
+
+
+class McpContextDefinition(BaseModel):
+    """
+    Defines an MCP tool call to fetch context data.
+
+    Used in both global (## MCP Context) and step-level (**MCP Context:**) sections.
+    """
+
+    alias: str = Field(
+        ...,
+        description="Key name used to store the MCP result in luggage"
+    )
+
+    server: str = Field(
+        ...,
+        description="MCP server: URL (http/https) for SSE transport, or command string for stdio transport"
+    )
+
+    tool: str = Field(
+        ...,
+        description="Name of the MCP tool to call"
+    )
+
+    arguments: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Arguments to pass to the MCP tool as a JSON object"
+    )
+
+    transport: McpTransport = Field(
+        default=McpTransport.AUTO,
+        description="Transport type: 'auto' detects from server field, 'stdio', or 'sse'"
+    )
+
+    description: Optional[str] = Field(
+        default=None,
+        description="Human-readable description of what this MCP tool provides"
+    )
+
+
 class ApiContextDefinition(BaseModel):
     """
     Defines an API endpoint to call for fetching context data.
@@ -158,6 +203,11 @@ class SkillStep(BaseModel):
         description="API endpoints to call for this step's context data"
     )
 
+    mcp_context: List["McpContextDefinition"] = Field(
+        default_factory=list,
+        description="MCP tool calls to make for this step's context data"
+    )
+
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
         description="Additional metadata for this step"
@@ -234,6 +284,11 @@ class Skill(BaseModel):
     global_api_context: List[ApiContextDefinition] = Field(
         default_factory=list,
         description="API endpoints to call for global context data"
+    )
+
+    global_mcp_context: List[McpContextDefinition] = Field(
+        default_factory=list,
+        description="MCP tool calls to make for global context data"
     )
 
     final_output_format: Optional[str] = Field(
